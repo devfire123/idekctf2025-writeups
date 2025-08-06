@@ -1,0 +1,139 @@
+================================================================================
+CTF Challenge Writeup: rev/ski
+================================================================================
+
+Challenge Name: rev/ski
+Category: Reverse Engineering
+Points: 254
+Solves: 52
+Flag: idek{d1d_y0u_0pt1m1z3_4nd_s1d3ch4nn3l3d_0r_s0lv3d_1n_7h3_1nt3nd3d_w4y}
+
+================================================================================
+CHALLENGE DESCRIPTION
+================================================================================
+
+This challenge involves SKI combinator calculus, a mathematical system for expressing 
+computation using only three basic combinators:
+- S: Substitution combinator
+- K: Constant combinator  
+- I: Identity combinator
+
+The challenge provides two interpreters (C++ and Python) that evaluate SKI expressions,
+but they are designed to be computationally expensive and resource-intensive.
+
+================================================================================
+FILES PROVIDED
+================================================================================
+
+1. interpreter.cpp - C++ implementation of SKI interpreter
+2. interpreter.py - Python implementation of SKI interpreter  
+3. program.txt - A massive SKI expression (111,791 characters)
+
+================================================================================
+INITIAL ANALYSIS
+================================================================================
+
+The challenge provides two interpreters that:
+1. Read an SKI expression from program.txt
+2. Take a flag as input
+3. Convert the flag to bits and map them to variables (_F0, _F1, _F2, etc.)
+4. Substitute these variables into the SKI expression
+5. Reduce the expression to normal form
+6. Check if the result is K (correct) or (K I) (incorrect)
+
+The key insight is that the interpreters are intentionally resource-intensive and 
+cannot be used directly for brute force attacks.
+
+================================================================================
+SOLUTION APPROACH
+================================================================================
+
+Instead of trying to evaluate the massive SKI expression, I analyzed the structure 
+of program.txt to understand how the flag is encoded.
+
+Key observations:
+1. The program.txt contains variables _F0 through _F559 (560 total variables)
+2. This suggests the flag is 560 bits = 70 bytes long
+3. Some variables appear wrapped in a specific pattern: 
+   (((S ((S I) (K (K I)))) (K K)) _Fi)
+4. Other variables appear unwrapped: _Fi
+
+This binary pattern (wrapped = 1, unwrapped = 0) likely encodes the flag itself.
+
+================================================================================
+DETAILED SOLUTION
+================================================================================
+
+Step 1: Extract the binary pattern
+- Used regex to find all wrapped variables: 
+  \(\(\(S \(\(S I\) \(K \(K I\)\)\)\) \(K K\)\) (_F[0-9]+)\)
+- Created a binary pattern where 1 = wrapped, 0 = unwrapped
+- Found 267 wrapped variables and 293 unwrapped variables
+
+Step 2: Convert binary pattern to bytes
+- Grouped bits into bytes (8 bits each)
+- Converted each byte to ASCII character
+
+Step 3: Try different interpretations
+- Direct ASCII: Invalid characters
+- Reversed bits: Invalid characters  
+- Inverted bits: SUCCESS!
+
+The inverted binary pattern (0 = wrapped, 1 = unwrapped) produced the flag.
+
+================================================================================
+TECHNICAL DETAILS
+================================================================================
+
+Binary Pattern Analysis:
+- Total variables: 560 (_F0 to _F559)
+- Wrapped variables: 267
+- Unwrapped variables: 293
+- Pattern: [1,0,0,1,0,1,1,0,1,0,0,1,1,0,1,1,1,0,0,1,...]
+
+Flag Extraction:
+- Inverted pattern: [0,1,1,0,1,0,0,1,0,1,1,0,0,1,0,0,0,1,1,0,...]
+- Converted to bytes: 69 64 65 6B 7B 64 31 64 5F 79 30 75 5F 30 70 74 31 6D 31 7A 33 5F 34 6E 64 5F 73 31 64 33 63 68 34 6E 6E 33 6C 33 64 5F 30 72 5F 73 30 6C 76 33 64 5F 31 6E 5F 37 68 33 5F 31 6E 74 33 6E 64 33 64 5F 77 34 79 7D
+- ASCII: idek{d1d_y0u_0pt1m1z3_4nd_s1d3ch4nn3l3d_0r_s0lv3d_1n_7h3_1nt3nd3d_w4y}
+
+================================================================================
+FLAG VERIFICATION
+================================================================================
+
+The flag "idek{d1d_y0u_0pt1m1z3_4nd_s1d3ch4nn3l3d_0r_s0lv3d_1n_7h3_1nt3nd3d_w4y}" 
+translates to: "did you optimize and sidechanneled or solved in the intended way"
+
+This is a meta-commentary on the challenge itself - the intended solution was to 
+analyze the pattern rather than brute force the SKI expression evaluation.
+
+================================================================================
+LESSONS LEARNED
+================================================================================
+
+1. Always analyze the structure of provided files before attempting computation
+2. Look for patterns in how data is encoded
+3. Consider that the challenge might be about finding the intended approach
+4. Resource-intensive operations are often hints that brute force is not the way
+5. Binary patterns can encode meaningful data in unexpected ways
+
+================================================================================
+TOOLS USED
+================================================================================
+
+- Python 3 for pattern analysis
+- Regular expressions for variable extraction
+- Binary manipulation for flag reconstruction
+- Text analysis for pattern recognition
+
+================================================================================
+CONCLUSION
+================================================================================
+
+This challenge demonstrates the importance of understanding the problem before 
+attempting to solve it. The massive SKI expression was a red herring - the real 
+solution was in the pattern of how variables were encoded in the expression.
+
+The flag itself confirms this: the intended way was to analyze and extract the 
+pattern, not to optimize and side-channel the computation.
+
+================================================================================ 
